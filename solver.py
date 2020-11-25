@@ -1,6 +1,6 @@
 import networkx as nx
 from parse import read_input_file, write_output_file
-from utils import is_valid_solution, calculate_happiness
+from utils import is_valid_solution, calculate_happiness, calculate_happiness_for_room, calculate_stress_for_room
 import sys
 
 
@@ -15,21 +15,81 @@ def solve(G, s):
     """
 
     # TODO: your code here!
-    pass
+    n = len(G)
+    D = {}
+    k = 0
+    bestH = 0
+
+    for r in range(n):
+        for grouping in sorted_k_partitions(range(0, n), r):
+            Htot = 0
+            for room in grouping:
+                if (calculate_stress_for_room(list(room), G) <= s/r):
+                    Htot += calculate_happiness_for_room(list(room), G)
+                else: 
+                    break
+            if (Htot > bestH):
+                bestH = Htot
+                k = r
+                D.clear()
+                count = 0
+                for room in grouping:
+                    for student in room:
+                        D[student] = count
+                    count += 1
+    for e in D:
+        print(e, D[e])
+    return D, k
+
+
+def sorted_k_partitions(seq, k):
+    """Returns a list of all unique k-partitions of `seq`.
+
+    Each partition is a list of parts, and each part is a tuple.
+
+    The parts in each individual partition will be sorted in shortlex
+    order (i.e., by length first, then lexicographically).
+
+    The overall list of partitions will then be sorted by the length
+    of their first part, the length of their second part, ...,
+    the length of their last part, and then lexicographically.
+    https://stackoverflow.com/questions/39192777/how-to-split-a-list-into-n-groups-in-all-possible-combinations-of-group-length-a
+    """
+    n = len(seq)
+    groups = []  # a list of lists, currently empty
+
+    def generate_partitions(i):
+        if i >= n:
+            yield list(map(tuple, groups))
+        else:
+            if n - i > k - len(groups):
+                for group in groups:
+                    group.append(seq[i])
+                    yield from generate_partitions(i + 1)
+                    group.pop()
+
+            if len(groups) < k:
+                groups.append([seq[i]])
+                yield from generate_partitions(i + 1)
+                groups.pop()
+
+    result = generate_partitions(0)
+
+    return result
 
 
 # Here's an example of how to run your solver.
 
 # Usage: python3 solver.py test.in
 
-# if __name__ == '__main__':
-#     assert len(sys.argv) == 2
-#     path = sys.argv[1]
-#     G, s = read_input_file(path)
-#     D, k = solve(G, s)
-#     assert is_valid_solution(D, G, s, k)
-#     print("Total Happiness: {}".format(calculate_happiness(D, G)))
-#     write_output_file(D, 'out/test.out')
+if __name__ == '__main__':
+     assert len(sys.argv) == 2
+     path = sys.argv[1]
+     G, s = read_input_file(path)
+     D, k = solve(G, s)
+     assert is_valid_solution(D, G, s, k)
+     print("Total Happiness: {}".format(calculate_happiness(D, G)))
+     write_output_file(D, '20.out')
 
 
 # For testing a folder of inputs to create a folder of outputs, you can use glob (need to import it)
