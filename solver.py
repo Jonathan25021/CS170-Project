@@ -20,26 +20,36 @@ def solve(G, s):
     k = 0
     bestH = 0
 
-    for r in range(n):
-        for grouping in sorted_k_partitions(range(0, n), r):
-            Htot = 0
-            for room in grouping:
-                if (calculate_stress_for_room(list(room), G) <= s/r):
-                    Htot += calculate_happiness_for_room(list(room), G)
-                else: 
-                    break
-            if (Htot > bestH):
-                bestH = Htot
-                k = r
-                D.clear()
-                count = 0
-                for room in grouping:
-                    for student in room:
-                        D[student] = count
-                    count += 1
+    V = G.nodes()
+    E = G.edges()
+    totalStress = 0
+    for e in E:
+        #print(G.get_edge_data(e[0], e[1]))
+        totalStress += G.get_edge_data(e[0], e[1])['stress']
+        
+    avgStress = totalStress / G.size()
+    avgNumBreakoutSize = s/avgStress
+    numBreakoutRooms = G.number_of_nodes()/avgNumBreakoutSize
+        
+    S = {} # dictionary of edges sorted by happiness/stress
+
+    # TODO: make sorted list of edges based on happiness/stress
+
+    
+
+    # TODO: iterate through list and put in rooms in order
+
+
+
     for e in D:
         print(e, D[e])
     return D, k
+
+def sort_into_n_rooms(G, s, n):
+    """Returns a dict of student mapping to breakout room"""
+    D = {}
+
+    return D
 
 
 def sorted_k_partitions(seq, k):
@@ -87,9 +97,9 @@ if __name__ == '__main__':
      path = sys.argv[1]
      G, s = read_input_file(path)
      D, k = solve(G, s)
-     assert is_valid_solution(D, G, s, k)
-     print("Total Happiness: {}".format(calculate_happiness(D, G)))
-     write_output_file(D, '20.out')
+     #assert is_valid_solution(D, G, s, k)
+     #print("Total Happiness: {}".format(calculate_happiness(D, G)))
+     #write_output_file(D, '20.out')
 
 
 # For testing a folder of inputs to create a folder of outputs, you can use glob (need to import it)
