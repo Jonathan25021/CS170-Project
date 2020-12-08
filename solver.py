@@ -35,7 +35,7 @@ def solve(G, s):
     while not pq.empty():
             S.append(pq.poll)
 
-        
+
     avgStress = totalStress / G.size()
     avgNumBreakoutSize = s/avgStress
     numBreakoutRooms = G.number_of_nodes()/avgNumBreakoutSize
@@ -60,20 +60,25 @@ def sort_into_n_rooms(G, s, n, e):
     roomStress = []
     for i in range(n):
         roomStress.append(0)
+    assigned = 0
     forwardCount = 0
+    reverseCount = 0
     iter = iter(e)
     backwardsIter = iter(e.reverse())
     while len(D.keys()) < n: #initial assignment of stressed pairs to different rooms (step4)
         currEdge = next(backwardsIter)
+        reverseCount += 1
         node1 = currEdge[0]
         node2 = currEdge[1]
         if node1 not in D.keys():
             D[node1] = len(D.keys()) #assign node 1 to next room
+            assigned += 1
         if len(D.keys()) >= n:
             break
         if node2 not in D.keys():
             D[node2] = len(D.keys()) #assign node 2 to next room
-    while True: #assigning happy pairs (step5)
+            assigned += 1
+    while assigned < len(V): #assigning happy pairs (step5)
         currEdge = next(e)
         node1 = currEdge[0]
         node2 = currEdge[1]
@@ -82,17 +87,22 @@ def sort_into_n_rooms(G, s, n, e):
             if currStress + roomStress[D[node1]] < s:
                 roomStress[D[node1]] = currStress + roomStress[D[node1]]
                 D[node2] = D[node1]
+                assigned += 1
         elif node1 not in D.keys() and node2 in D.keys():
             if currStress + roomStress[D[node2]] < s:
                 roomStress[D[node2]] = currStress + roomStress[D[node2]]
                 D[node1] = D[node2]
+                assigned += 1
         elif node1 not in D.keys() and node2 not in D.keys():
             for i in range(roomStress):
                 if currStress + roomStress[i] < s:
                     roomStress[i] = currStress + roomStress[i]
                     D[node1] = i
                     D[node2] = i
+                    assigned += 2
         forwardCount += 1
+        if forwardCount == len(V):
+            print('failed to assign rooms')
 
 
     return D
