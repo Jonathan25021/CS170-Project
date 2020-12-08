@@ -29,6 +29,13 @@ def solve(G, s):
     for e in E:
         #print(G.get_edge_data(e[0], e[1]))
         totalStress += G.get_edge_data(e[0], e[1])['stress']
+        heuristic = G.get_edge_data(e[0], e[1])['happiness'] / G.get_edge_data(e[0], e[1])['stress']
+        pq.put((heuristic, e))
+
+    while not pq.empty():
+            S.append(pq.poll)
+
+        
     avgStress = totalStress / G.size()
     avgNumBreakoutSize = s/avgStress
     numBreakoutRooms = G.number_of_nodes()/avgNumBreakoutSize
