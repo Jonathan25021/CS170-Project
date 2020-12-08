@@ -39,17 +39,10 @@ def solve(G, s):
     avgStress = totalStress / G.size()
     avgNumBreakoutSize = s/avgStress
     numBreakoutRooms = G.number_of_nodes()/avgNumBreakoutSize
-
-    S = {} # dictionary of edges sorted by happiness/stress
-
-    # TODO: make sorted list of edges based on happiness/stress
-
-
-
     # TODO: solve using sort_into_n_rooms with varying n
 
 
-
+    
     for e in D:
         print(e, D[e])
     return D, k
@@ -58,8 +51,10 @@ def sort_into_n_rooms(G, s, n, e):
     """Returns a dict of student mapping to breakout room"""
     D = {}
     roomStress = []
+    B = {}
     for i in range(n):
         roomStress.append(0)
+        B[n] = []
     forwardCount = 0
     iter = iter(e)
     backwardsIter = iter(e.reverse())
@@ -69,34 +64,45 @@ def sort_into_n_rooms(G, s, n, e):
         node2 = currEdge[1]
         if node1 not in D.keys():
             D[node1] = len(D.keys()) #assign node 1 to next room
+            B[len(D.keys)].append(node1)
         if len(D.keys()) >= n:
             break
         if node2 not in D.keys():
             D[node2] = len(D.keys()) #assign node 2 to next room
-    while True: #assigning happy pairs (step5)
+            B[len(D.keys)].append(node2)
+    for i in range(len(e) / 3): #assigning happy pairs (step5)
         currEdge = next(e)
         node1 = currEdge[0]
         node2 = currEdge[1]
         currStress= G.get_edge_data(node1, node2)['stress']
         if node1 in D.keys() and node2 not in D.keys():
-            if currStress + roomStress[D[node1]] < s:
-                roomStress[D[node1]] = currStress + roomStress[D[node1]]
+            plusH, plusS = add_room_stats(G, D, B, D[node1], node2)
+            if currStress + plusS < s:
+                B[D[node1]].append(node2)
+                roomStress[D[node1]] += plusS
                 D[node2] = D[node1]
         elif node1 not in D.keys() and node2 in D.keys():
-            if currStress + roomStress[D[node2]] < s:
-                roomStress[D[node2]] = currStress + roomStress[D[node2]]
+            plusH, plusS = add_room_stats(G, D, B, D[node2], node1)
+            if currStress + plusS < s:
+                B[D[node2]].append(node1)
+                roomStress[D[node2]] += plusS
                 D[node1] = D[node2]
-        elif node1 not in D.keys() and node2 not in D.keys():
-            for i in range(roomStress):
-                if currStress + roomStress[i] < s:
-                    roomStress[i] = currStress + roomStress[i]
-                    D[node1] = i
-                    D[node2] = i
         forwardCount += 1
 
+    for v in G.nodes():
+        if v not in D.keys:
+            
 
     return D
 
+def add_room_stats(G, D, B, b, V):
+    h = 0
+    s = 0
+    for v in B[i]:
+        h, s += G.get_edge_data(V, v)
+
+
+    return [h, s]
 
 def sorted_k_partitions(seq, k):
     """Returns a list of all unique k-partitions of `seq`.
