@@ -2,6 +2,7 @@ import networkx as nx
 from parse import read_input_file, write_output_file
 from utils import is_valid_solution, calculate_happiness, calculate_happiness_for_room, calculate_stress_for_room
 import sys
+from queue import PriorityQueue
 
 
 def solve(G, s):
@@ -23,9 +24,17 @@ def solve(G, s):
     V = G.nodes()
     E = G.edges()
     totalStress = 0
+    S = [] # list of edges sorted by heuristic
+    pq = PriorityQueue()
     for e in E:
         #print(G.get_edge_data(e[0], e[1]))
         totalStress += G.get_edge_data(e[0], e[1])['stress']
+        heuristic = G.get_edge_data(e[0], e[1])['happiness'] / G.get_edge_data(e[0], e[1])['stress']
+        pq.put((heuristic, e))
+
+    while not pq.empty():
+            S.append(pq.poll)
+
         
     avgStress = totalStress / G.size()
     avgNumBreakoutSize = s/avgStress
