@@ -37,7 +37,7 @@ def solve(G, s):
 
     
 
-    # TODO: iterate through list and put in rooms in order
+    # TODO: solve using sort_into_n_rooms with varying n
 
 
 
