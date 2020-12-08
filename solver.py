@@ -26,16 +26,16 @@ def solve(G, s):
     for e in E:
         #print(G.get_edge_data(e[0], e[1]))
         totalStress += G.get_edge_data(e[0], e[1])['stress']
-        
+
     avgStress = totalStress / G.size()
     avgNumBreakoutSize = s/avgStress
     numBreakoutRooms = G.number_of_nodes()/avgNumBreakoutSize
-        
+
     S = {} # dictionary of edges sorted by happiness/stress
 
     # TODO: make sorted list of edges based on happiness/stress
 
-    
+
 
     # TODO: solve using sort_into_n_rooms with varying n
 
@@ -45,9 +45,46 @@ def solve(G, s):
         print(e, D[e])
     return D, k
 
-def sort_into_n_rooms(G, s, n):
+def sort_into_n_rooms(G, s, n, e):
     """Returns a dict of student mapping to breakout room"""
     D = {}
+    roomStress = []
+    for i in range(n):
+        roomStress.append(0)
+    forwardCount = 0
+    iter = iter(e)
+    backwardsIter = iter(e.reverse())
+    while len(D.keys()) < n: #initial assignment of stressed pairs to different rooms (step4)
+        currEdge = next(backwardsIter)
+        node1 = currEdge[0]
+        node2 = currEdge[1]
+        if node1 not in D.keys():
+            D[node1] = len(D.keys()) #assign node 1 to next room
+        if len(D.keys()) >= n:
+            break
+        if node2 not in D.keys():
+            D[node2] = len(D.keys()) #assign node 2 to next room
+    while True: #assigning happy pairs (step5)
+        currEdge = next(e)
+        node1 = currEdge[0]
+        node2 = currEdge[1]
+        currStress= G.get_edge_data(node1, node2)['stress']
+        if node1 in D.keys() and node2 not in D.keys():
+            if currStress + roomStress[D[node1]] < s:
+                roomStress[D[node1]] = currStress + roomStress[D[node1]]
+                D[node2] = D[node1]
+        elif node1 not in D.keys() and node2 in D.keys():
+            if currStress + roomStress[D[node2]] < s:
+                roomStress[D[node2]] = currStress + roomStress[D[node2]]
+                D[node1] = D[node2]
+        elif node1 not in D.keys() and node2 not in D.keys():
+            for i in range(roomStress):
+                if currStress + roomStress[i] < s:
+                    roomStress[i] = currStress + roomStress[i]
+                    D[node1] = i
+                    D[node2] = i
+        forwardCount += 1
+
 
     return D
 
